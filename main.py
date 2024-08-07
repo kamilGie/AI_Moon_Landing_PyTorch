@@ -5,7 +5,7 @@ from agent import Agent
 
 def TrainModel(agent):
     from collections import deque
-    number_episozed = 2000
+    number_episodes = 2000
     maximum_number_timesteps_per_episodes = 1000
     epssilon_starting_value = 1.0 
     epssilon_ending_value = 0.01
@@ -13,7 +13,7 @@ def TrainModel(agent):
     epsilon = epssilon_starting_value
     scores_on_100_episodes = deque(maxlen=100)
 
-    for episode in range(1, number_episozed+1):
+    for episode in range(1, number_episodes+1):
         state, _ = env.reset()
         score = 0 
         for _ in range(maximum_number_timesteps_per_episodes):
@@ -31,14 +31,14 @@ def TrainModel(agent):
         if episode % 100 == 0:
             print('\rEpisode {}\tAverage Score: {:.2f}'.format(episode,np.mean(scores_on_100_episodes)))
         if np.mean(scores_on_100_episodes) >= 200.0:
-            print('\Envierment solved in  {:d} episoed!\tAverage Score: {:.2f}'.format(episode-100,np.mean(scores_on_100_episodes)))
-            torch.save(agent.local_qnetork.state_dict(), 'checkpoint.pth')
+            print('\Environment solved in  {:d} episoed!\tAverage Score: {:.2f}'.format(episode-100,np.mean(scores_on_100_episodes)))
+            torch.save(agent.local_qnetwork.state_dict(), 'checkpoint.pth')
             break
 
 
 def LoadModel(agent, model_file_path = 'checkpoint.pth'):
     import os
-    agent.local_qnetork.load_state_dict(torch.load(model_file_path))
+    agent.local_qnetwork.load_state_dict(torch.load(model_file_path))
         
 
 def ShowResult(agent):
