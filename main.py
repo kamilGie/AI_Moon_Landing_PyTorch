@@ -94,3 +94,18 @@ class agent():
             return np.argmax(action_values.cpu().data.numpy())
         else:
             return random.choice(np.arange(self.action_size))
+        
+    def learn(self, experienes, discount_factor):#nie ogariam tego xd 
+        states,next_state,action,rewards,dones = experienes
+        next_q_target = self.target_qnetork(next_state).detach().max(1)[0].unsqueeze(1)
+        q_target = rewards + (discount_factor * next_q_target * (1- dones))
+        q_expected = self.local_qnetork(states).gather(1,actions)
+        loss = F.mse_loss(q_expected, q_target)
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step()
+        self.soft_update(self.local_qnetork,self.target_qnetork, interpolation_parameter)
+
+    def soft_update(self ,localModel, TargetModel, interpolation_parameter):
+        for targetParam, local_param in zip(TargetModel.parameters(),localModel.parameters()):
+            targetParam.data.copy_(interpolation_parameter* local_param.data + (1.0-interpolation_parameter) * targetParam.data) 
