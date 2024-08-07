@@ -1,18 +1,10 @@
 import numpy as np 
 import torch 
-from collections import deque
-from agent import Agent
 import gym
+from agent import Agent
 
-env = gym.make('LunarLander-v2')
-state_shape = env.observation_space.shape
-state_size =  env.observation_space.shape[0]
-number_actions = env.action_space.n
-
-agent = Agent(state_size, number_actions)
-
-
-def Train():
+def TrainModel(agent):
+    from collections import deque
     number_episozed = 2000
     maximum_number_timesteps_per_episodes = 1000
     epssilon_starting_value = 1.0 
@@ -22,9 +14,9 @@ def Train():
     scores_on_100_episodes = deque(maxlen=100)
 
     for episode in range(1, number_episozed+1):
-        state, _ = env.reset()# co to xdd
+        state, _ = env.reset()
         score = 0 
-        for t in range(0,maximum_number_timesteps_per_episodes):
+        for _ in range(maximum_number_timesteps_per_episodes):
             action = agent.act(state, epsilon)
             next_state, reward, done, _ , _ = env.step(action)
             agent.step(state,action,reward,next_state,done)
@@ -32,6 +24,7 @@ def Train():
             score += reward
             if done: 
                 break
+        
         scores_on_100_episodes.append(score)
         epsilon = max(epssilon_ending_value, epssilon_decay_value*epsilon)
         print('\rEpisode {}\tAverage Score: {:.2f}'.format(episode,np.mean(scores_on_100_episodes)), end="")
@@ -43,24 +36,17 @@ def Train():
             break
 
 
-def LoadModel():
+def LoadModel(agent, model_file_path = 'checkpoint.pth'):
     import os
-    model_file_path = 'checkpoint.pth'
-
-    if os.path.isfile(model_file_path):
-        agent.local_qnetork.load_state_dict(torch.load(model_file_path))
-        print("Model wczytany pomyślnie.")
-    else:
-        print("Nie znaleziono pliku modelu, rozpoczynanie treningu od nowa.")
+    agent.local_qnetork.load_state_dict(torch.load(model_file_path))
         
 
-def ShowResult():
+def ShowResult(agent):
     import glob
     import io
     import base64
     import imageio
     from IPython.display import HTML, display
-    from gym.wrappers.monitoring.video_recorder import VideoRecorder
 
     def show_video_of_model(agent, env_name):
         env = gym.make(env_name, render_mode='rgb_array')
@@ -94,6 +80,12 @@ def ShowResult():
 
 
 if __name__ == "__main__":
-    Train()
-    # LoadModel()
-    ShowResult()
+    env = gym.make('LunarLander-v2')
+    state_shape = env.observation_space.shape
+    state_size =  env.observation_space.shape[0]
+    number_actions = env.action_space.n
+    agent = Agent(state_size, number_actions)
+
+    TrainModel(agent)
+    # LoadModel(agent)
+    ShowResult(agent)
