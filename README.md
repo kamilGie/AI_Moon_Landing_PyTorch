@@ -1,1 +1,1 @@
-# Leanding on the moon by ai 
+# landing on the moon by ai
